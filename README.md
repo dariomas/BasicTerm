@@ -7,6 +7,10 @@ control over (typically) a serial connection.
 The canonical version of BasicTerm is available on
 [GitHub](http://github.com/nottwo/BasicTerm).
 
+[GitHub] https://github.com/RobTillaart/Arduino/blob/master/libraries/VT100/VT100.h
+[GitHub] https://github.com/rklancer/ansiterm
+http://www.hobbytronics.co.uk/tutorials-code/arduino-tutorials/arduino-vtserial-library
+
 Features
 --------
 

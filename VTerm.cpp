@@ -5,29 +5,30 @@
  * Licensed for use under the terms of the GNU Lesser General Public License v3
  */
 
-#include "BasicTerm.h"
+#include "VTerm.h"
+#include "VT100.h"
 
-BasicTerm::BasicTerm(Stream *ser) {
+VTerm::VTerm(Stream *ser) {
     serial = ser;
 }
 
-int BasicTerm::available(void) {
+int VTerm::available(void) {
     return serial->available();
 }
 
-int BasicTerm::peek(void) {
+int VTerm::peek(void) {
     return serial->peek();
 }
 
-int BasicTerm::read(void) {
+int VTerm::read(void) {
     return serial->read();
 }
 
-void BasicTerm::flush(void) {
+void VTerm::flush(void) {
     serial->flush();
 }
 
-size_t BasicTerm::write(uint8_t c) {
+size_t VTerm::write(uint8_t c) {
     uint8_t ret;
 
     if(c & BT_ALTCHAR) {
@@ -40,37 +41,83 @@ size_t BasicTerm::write(uint8_t c) {
     return serial->write(c);
 }
 
-void BasicTerm::init(void) {
-   serial->print(F("\x1b\x63")); 
+void VTerm::init(void) {
+   serial->print(RIS); 
 }
 
-void BasicTerm::cls(void) {
-    serial->print(F("\x1b[2J"));
+void VTerm::cls(void) {
+    serial->print(CLS);
 }
 
-void BasicTerm::position(uint8_t row, uint8_t col) {
-    serial->print(F("\x1b["));
+void VTerm::home(void) {
+    serial->print(HOME);
+}
+
+void VTerm::up(char x) {
+    serial->print(CSI);
+    serial->print(x,DEC);
+    serial->write('A');
+}
+
+void VTerm::down(char x) {
+    serial->print(CSI);
+    serial->print(x,DEC);
+    serial->write('B');
+}
+
+void VTerm::forward(char x) {
+    serial->print(CSI);
+    serial->print(x,DEC);
+    serial->write('C');
+}
+
+void VTerm::backward(char x) {
+    serial->print(CSI);
+    serial->print(x,DEC);
+    serial->write('D');
+}
+
+void VTerm::eraseLine(void) {
+    serial->print(EL2);
+}
+
+void VTerm::eraseScreen(void) {
+    serial->print(ED2);
+}
+
+void VTerm::fill(char x1, char y1, char x2, char y2) {
+    for (char x = x1; x <= x2; x++)
+  {
+    for (char y = y1; y <= y2; y++)
+    {
+      position(x,y);
+      serial->print(' ');
+    }
+  }
+}
+void VTerm::position(uint8_t row, uint8_t col) {
+    serial->print(CSI);
     serial->print((uint8_t)row + 1);
     serial->print(F(";"));
     serial->print((uint8_t)col + 1);
     serial->print(F("H"));
 }
 
-void BasicTerm::show_cursor(boolean show) {
+void VTerm::show_cursor(boolean show) {
     if(show) {
-        serial->print(F("\x1b[?25h"));
+        serial->print(SHOW_CURSOR);
     } else {
-        serial->print(F("\x1b[?25l"));
+        serial->print(HIDE_CURSOR);
     }
 }
 
-int16_t BasicTerm::get_key(void) {
+int16_t VTerm::get_key(void) {
     int16_t key;
     uint16_t when;
 
     key = serial->read();
 
-    if(key == 0x1b) { /* escape sequence */
+    if(key == ESC_CHAR) { /* escape sequence */
         when = millis();
         while(serial->available() < 2) {
             if(((uint16_t) millis() - when) > 1000) {
@@ -119,32 +166,32 @@ int16_t BasicTerm::get_key(void) {
     return key;
 }
 
-void BasicTerm::set_attribute(uint8_t attr) {
+void VTerm::set_attribute(uint8_t attr) {
     if(attr & BT_REVERSE) {
-        serial->print(F("\x1b[7m"));
+        serial->print(REVERSE);
     }
     if(attr & BT_UNDERLINE) {
-        serial->print(F("\x1b[4m"));
+        serial->print(UNDERLINE);
     }
     if(attr & BT_BOLD) {
-        serial->print(F("\x1b[1m"));
+        serial->print(BOLD);
     }
     if(attr & BT_BLINK) {
-        serial->print(F("\x1b[5m"));
+        serial->print(BLINK);
     }
     if(attr == BT_NORMAL) {
-        serial->print(F("\x1b[0m"));
+        serial->print(OFF);
     }
 }
 
-void BasicTerm::set_color(uint8_t fg, uint8_t bg) {
-    serial->print(F("\x1b["));
+void VTerm::set_color(uint8_t fg, uint8_t bg) {
+    serial->print(CSI);
     serial->print(30 + fg);
     serial->print(";");
     serial->print(40 + bg);
     serial->print("m");
 }
 
-void BasicTerm::beep(void) {
-    serial->print(F("\x07"));
+void VTerm::beep(void) {
+    serial->print(BELL_CHAR);
 }

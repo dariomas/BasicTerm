@@ -5,12 +5,12 @@
  * Licensed for use under the terms of the GNU Lesser General Public License v3
  */
 
-#ifndef BASICTERM_H
-#define BASICTERM_H
+#ifndef VTERM_H
+#define VTERM_H
 
 #include <Arduino.h>
 
-class BasicTerm : public Stream {
+class VTerm : public Stream {
 
 #define BT_NORMAL    0
 #define BT_BOLD      1
@@ -69,14 +69,22 @@ class BasicTerm : public Stream {
         Stream *serial;
 
     public:
-        BasicTerm(Stream *);
+        VTerm(Stream *);
         void init(void);
         void cls(void);
+        void home(void);
+        void up(char x);
+        void down(char x);
+        void forward(char x);
+        void backward(char x);
+        void eraseLine(void);
+        void eraseScreen(void);
+        void fill(char x1, char y1, char x2, char y2);
         void position(uint8_t, uint8_t);
         void show_cursor(boolean);
         void set_attribute(uint8_t);
         void set_color(uint8_t, uint8_t);
-	void beep(void);
+        void beep(void);
         int16_t get_key(void);
 
         virtual int available(void);
